@@ -14,7 +14,7 @@
 			<h1 id="signup-title">Create your account</h1>
 			<p class="login-subtitle">Sign up to get started</p>
 
-			<form method="POST" class="login-form" action="">
+			<form method="POST" class="login-form" action="{% url 'signup' %}">
 				{% csrf_token %}
 
 				<div class="form-field">
@@ -32,6 +32,9 @@
 					<input id="password-confirm" type="password" name="password_confirm" placeholder="Enter your password again" autocomplete="new-password" required>
 				</div>
 
+				{% if error and message %}
+					<p class="error-message" role="alert">{{ message }}</p>
+				{% endif %}
 				<button type="submit">Sign up</button>
 			</form>
 		</section>

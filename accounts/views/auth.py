@@ -2,7 +2,8 @@
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
+
 
 from core.decorators.jwt_decorator import jwt_required
 # Create your views here.
@@ -35,4 +36,34 @@ def profile(request):
     return render(request,'accounts/profile.html')
 
 def signup(request):
+
+    if(request.method == "POST"):
+        return postSignup(request)
+    
     return render(request,'accounts/signup.html')
+
+def postSignup(request):
+    User = get_user_model()
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    confirm_password = request.POST.get('password_confirm')
+
+    response = { 'data' : None , 'message' : None , 'error': True , 'status' : 200  }                                    
+
+    if ( User.objects.filter(username= username).exists()):
+        response['status'] = 403
+        response['message'] = 'Username is already used. Please user another one'
+
+        return render(request,'accounts/signup.html' , response)
+
+    if( password != confirm_password):
+        response['status'] = 403
+        response['message'] = 'Password do not much'
+
+        return render(request,'accounts/signup.html' , response)
+
+    response['error'] = False
+
+    response['data'] = User.objects.create_user(username=username, email=None , password=password)
+    print(response)
+    return render(request,'accounts/index.html' , response)
