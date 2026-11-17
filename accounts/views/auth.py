@@ -14,8 +14,6 @@ def login(request):
         return postLogin(request)
 
     return render(request,'accounts/index.html')
-
-
 def postLogin(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -34,5 +32,7 @@ def postLogin(request):
 
 @jwt_required
 def profile(request):
-
     return render(request,'accounts/profile.html')
+
+def signup(request):
+    return render(request,'accounts/signup.html')

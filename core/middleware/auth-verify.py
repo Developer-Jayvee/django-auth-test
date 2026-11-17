@@ -12,8 +12,6 @@ class AuthenticationVerify:
         if ( auth_header and auth_header.startswith('Bearer ')):
             token = auth_header.split(' ')[1]
             payload = decode_token(token)
-
-
             if payload:
                 try:
                     request.user = User.objects.get(id = payload['user_id'])
