@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'core.middleware.auth-verify.AuthenticationVerify'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -134,3 +136,10 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+## JWT CONFIGURATION
+
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY',None)
+JWT_ALGO = os.environ.get('JWT_ALGO',None)
+JWT_ACCESS_TOKEN_LIFETIME = os.environ.get('JWT_ACCESS_TOKEN_LIFETIME',(60 * 15))
