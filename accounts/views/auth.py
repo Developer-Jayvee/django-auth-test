@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, get_user_model
-
+from ..forms import LoginForm
 
 from core.decorators.jwt_decorator import jwt_required
 # Create your views here.
@@ -16,19 +16,23 @@ def login(request):
 
     return render(request,'accounts/index.html')
 def postLogin(request):
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-
-    user = authenticate(
-        username = username,
-        password = password
-    )   
-
+    form = LoginForm(request.POST)
     response = { 'data' : user , 'message' : None , 'error': None , 'status' : 200  }
+    if(form.is_valid()):
 
-    if( user is None):
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user = authenticate(
+            username = username,
+            password = password
+        )   
+        if( user is None):
+            response['status'] = 401
+            response['error'] = 'Invalid Credentials'
+    else:
         response['status'] = 401
-        response['error'] = 'Invalid Credentials'
+        response['error'] = 'Please fill up the fields correctly'
+        form = LoginForm()
     return render(request,'accounts/index.html' , response, status=response['status'])
 
 @jwt_required
