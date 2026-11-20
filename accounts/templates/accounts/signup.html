@@ -32,8 +32,8 @@
 					<input id="password-confirm" type="password" name="password_confirm" placeholder="Enter your password again" autocomplete="new-password" required>
 				</div>
 
-				{% if error and message %}
-					<p class="error-message" role="alert">{{ message }}</p>
+				{% if error  %}
+					<p class="error-message" role="alert">{{ error|first }}</p>
 				{% endif %}
 				<button type="submit">Sign up</button>
 			</form>

@@ -1,15 +1,17 @@
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from ..forms import LoginForm
-
+from django.contrib import messages
 from core.decorators.jwt_decorator import jwt_required
+
+from django.core.exceptions import ValidationError
 # Create your views here.
 import json
 
-def login(request):
+def login_view(request):
 
     if(request.method == "POST"): 
         return postLogin(request)
@@ -17,7 +19,6 @@ def login(request):
     return render(request,'accounts/index.html')
 def postLogin(request):
     form = LoginForm(request.POST)
-    response = { 'data' : user , 'message' : None , 'error': None , 'status' : 200  }
     if(form.is_valid()):
 
         username = form.cleaned_data['username']
@@ -26,14 +27,15 @@ def postLogin(request):
             username = username,
             password = password
         )   
-        if( user is None):
-            response['status'] = 401
-            response['error'] = 'Invalid Credentials'
+        if( user is not None):
+            login(request,user)
+            return redirect('profile')
+            
     else:
-        response['status'] = 401
-        response['error'] = 'Please fill up the fields correctly'
+        messages.error(request,'Invalid Credentials')
         form = LoginForm()
-    return render(request,'accounts/index.html' , response, status=response['status'])
+
+    return redirect('login');
 
 @jwt_required
 def profile(request):
@@ -47,27 +49,24 @@ def signup(request):
     return render(request,'accounts/signup.html')
 
 def postSignup(request):
-    User = get_user_model()
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    confirm_password = request.POST.get('password_confirm')
+    try:
+        User = get_user_model()
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('password_confirm')
 
-    response = { 'data' : None , 'message' : None , 'error': True , 'status' : 200  }                                    
 
-    if ( User.objects.filter(username= username).exists()):
-        response['status'] = 403
-        response['message'] = 'Username is already used. Please user another one'
+        if ( User.objects.filter(username= username).exists()):
+            raise ValidationError('Username is already')
 
-        return render(request,'accounts/signup.html' , response)
 
-    if( password != confirm_password):
-        response['status'] = 403
-        response['message'] = 'Password do not much'
+        if( password != confirm_password):
+             raise ValidationError('Password do not match')
 
-        return render(request,'accounts/signup.html' , response)
+        User.objects.create_user(username=username, email=None , password=password)
+        messages.success(request,"Account created successfully")
+        return redirect('login')
 
-    response['error'] = False
 
-    response['data'] = User.objects.create_user(username=username, email=None , password=password)
-    print(response)
-    return render(request,'accounts/index.html' , response)
+    except ValidationError as e:
+        return render(request,'accounts/signup.html' , { "error": e.messages})
