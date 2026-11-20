@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, get_user_model, login
 from ..forms import LoginForm
 from django.contrib import messages
 from core.decorators.jwt_decorator import jwt_required
+from django.contrib.auth.decorators import login_required
 
 from django.core.exceptions import ValidationError
 # Create your views here.
@@ -37,11 +38,11 @@ def postLogin(request):
 
     return redirect('login');
 
-@jwt_required
+@login_required
 def profile(request):
     return render(request,'accounts/profile.html')
 
-def signup(request):
+def signup_view(request):
 
     if(request.method == "POST"):
         return postSignup(request)
